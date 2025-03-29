@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capture Photo and Upload to Firebase</title>
+    <title>Camera Stream</title>
     <style>
         body {
             display: flex;
@@ -13,7 +13,7 @@
             height: 100vh;
             background-color: #f4f4f4;
         }
-        video, canvas {
+        video {
             width: 300px;
             height: 300px;
             border: 2px solid black;
@@ -27,57 +27,31 @@
             cursor: pointer;
         }
     </style>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"></script>
 </head>
 <body>
-    <video id="video" autoplay></video>
-    <canvas id="canvas" style="display: none;"></canvas>
+    <h1>Camera Stream</h1>
+    <video id="localVideo" autoplay playsinline></video>
     <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyC6s8Vv6hGuJqRYDb8BMZ9NdpUcrQipFq4",
-            authDomain: "indexcam-67629.firebaseapp.com",
-            projectId: "indexcam-67629",
-            storageBucket: "indexcam-67629.firebasestorage.app",
-            messagingSenderId: "388826493507",
-            appId: "1:388826493507:web:ee85b462e4bbeb051c1af6"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const storage = firebase.storage();
+        const localVideo = document.getElementById('localVideo');
+        const peerConnection = new RTCPeerConnection();
 
         // Access the user's camera
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => { console.error("Error accessing camera: ", err); });
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+            .then(stream => {
+                localVideo.srcObject = stream;
 
-        // Automatically capture photo and upload it
-        setTimeout(() => {
-            console.log('Capturing photo...');
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                // Add the camera stream to the peer connection
+                stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
 
-            // Convert canvas to Blob
-            canvas.toBlob(blob => {
-                console.log('Captured photo blob:', blob);
-
-                // Upload the photo to Firebase Storage
-                const storageRef = storage.ref();
-                const photoRef = storageRef.child(`photos/captured_photo_${Date.now()}.png`);
-                photoRef.put(blob).then(snapshot => {
-                    console.log('Photo uploaded successfully:', snapshot);
-                    alert('Photo uploaded to Firebase Storage!');
-                }).catch(err => console.error('Error uploading photo:', err));
-            }, 'image/png');
-        }, 5000); // 5 seconds delay
+                // Create an offer and log it
+                peerConnection.createOffer()
+                    .then(offer => {
+                        peerConnection.setLocalDescription(offer);
+                        console.log('Offer:', JSON.stringify(offer));
+                        alert('Copy the offer from the console and share it with the viewer.');
+                    });
+            })
+            .catch(err => console.error('Error accessing camera:', err));
     </script>
 </body>
 </html>
